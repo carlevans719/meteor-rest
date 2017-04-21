@@ -9,8 +9,9 @@ SimpleRest = {};
 // Also:
 //    objectIdCollections: ['widgets', 'doodles']
 SimpleRest._config = {
-	methodUrlPrefix: 'methods/',
-	publicationUrlPrefix: 'publications/'
+  methodUrlPrefix: 'methods/',
+  publicationUrlPrefix: 'publications/',
+  ignoreNullPublications: false
 };
 SimpleRest.configure = function (config) {
   return _.extend(SimpleRest._config, config);
@@ -55,6 +56,12 @@ Meteor.publish = function (name, handler, options) {
 
   // Register DDP publication
   oldPublish(name, handler, ddpOptions);
+
+  // Do not make null publications available over http if the user
+  // has disabled it
+  if (name === null && SimpleRest._config.ignoreNullPublications) {
+    return undefined
+  }
 
   _.defaults(httpOptions, {
     url: SimpleRest._config.publicationUrlPrefix + name,
